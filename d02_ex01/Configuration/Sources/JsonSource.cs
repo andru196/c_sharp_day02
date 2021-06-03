@@ -22,7 +22,8 @@ namespace d02_ex01.Configuration.Sources
         {
             try
             {
-                var result = JsonSerializer.Deserialize<Configuration>(Path, new JsonSerializerOptions()
+                var json = System.IO.File.ReadAllText(Path);
+                var result = JsonSerializer.Deserialize<Configuration>(json, new JsonSerializerOptions()
                 {
                     PropertyNameCaseInsensitive = false
                 });

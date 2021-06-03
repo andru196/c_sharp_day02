@@ -9,7 +9,7 @@ using System.Text;
 if (args.Length != 4 || !int.TryParse(args[1], out var jsonPriority)
     || !int.TryParse(args[3], out var yamlPriority))
 {
-    Console.WriteLine("fck");
+    Console.WriteLine("Invalid data. Check your input and try again.");
     return;
 }
 var jsonPath = args[0];
@@ -17,10 +17,12 @@ var yamlPath = args[2];
 var results = new List<IConfigurationSource>();
 
 foreach (var source in
-        new []{(jsonPriority, jsonPath), (yamlPriority, yamlPath)})
+        new Func<IConfigurationSource>[]{
+            () => new JsonSource(jsonPriority, jsonPath),
+            () => new YamlSource(yamlPriority, yamlPath)})
     try
     {
-        results.Add(new JsonSource(source.Item1, source.Item2));
+        results.Add(source());
     }
     catch (FileNotFoundException)
     {
@@ -40,16 +42,15 @@ results.Add(new EnvSource());
 
 var finishresults = results.OrderBy(x => x.Priority).Select(x=>x.LoadData());
 var res = MergerSet(finishresults);
-
+PrintConfiguation(res);
 
 
 Configuration MergerSet(IEnumerable<Configuration> _set)
 {
     var res = new Configuration();
     var enumerator = _set.GetEnumerator();
-    enumerator.Reset();
-    while (res.Address == null || res.Port == null || res.SecretKey == null
-        || res.TimeOfRun == null || res.User == null || !enumerator.MoveNext())
+    while ((res.Address == null || res.Port == null || res.SecretKey == null
+        || res.TimeOfRun == null || res.User == null) && enumerator.MoveNext())
     {
         var current = enumerator.Current;
         if (res.Address == null && current.Address != null)
@@ -70,8 +71,9 @@ void PrintConfiguation(Configuration conf)
 {
     var strBuilder = new StringBuilder();
     strBuilder.Append($"Address\t{conf.Address}");
-    strBuilder.Append($"Port\t{conf.Port}");
-    strBuilder.Append($"SecretKey\t{conf.SecretKey}");
-    strBuilder.Append($"User\t{conf.User}");
-    strBuilder.Append($"TimeOfRun\t{conf.TimeOfRun}");
+    strBuilder.Append($"\nPort\t{conf.Port}");
+    strBuilder.Append($"\nSecretKey\t{conf.SecretKey}");
+    strBuilder.Append($"\nUser\t{conf.User}");
+    strBuilder.Append($"\nTimeOfRun\t{conf.TimeOfRun}");
+    Console.WriteLine(strBuilder);
 }

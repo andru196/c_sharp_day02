@@ -23,7 +23,13 @@ var compilation = (books as IEnumerable<ISearchable>).Concat(movies);
 Console.WriteLine("Input search text");
 var answer = Console.ReadLine();
 
-var result = compilation.Where(x => x.Title.ToLower().Contains(answer)).ToArray();
+var result = compilation.Where(x => x.Title.ToLower().Contains(answer.ToLower())).ToArray();
+
+if (result.Count() == 0)
+{
+	Console.WriteLine($"There are no \"{answer}\" in media today.");
+	return;
+}
 Console.WriteLine();
 Console.WriteLine($"Items found: {result.Length}");
 Console.WriteLine($"Book search result [{result.Where(x => x.GetType() == typeof(Book)).Count()}]:");
